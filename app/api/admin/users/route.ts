@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+// This route reads `request.headers` and must be rendered dynamically.
+export const dynamic = 'force-dynamic';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import Transaction from '@/models/Transaction';

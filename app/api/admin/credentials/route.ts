@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+
+// This route reads `request.headers` and must be rendered dynamically.
+export const dynamic = 'force-dynamic';
 import * as fs from 'fs';
 import * as path from 'path';
 

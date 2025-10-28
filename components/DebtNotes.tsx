@@ -19,6 +19,8 @@ export default function DebtNotes() {
   const [debts, setDebts] = useState<Debt[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [payingDebtId, setPayingDebtId] = useState<string | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState<string>('');
   const [formData, setFormData] = useState({
     creditor: '',
     amount: '',
@@ -160,6 +162,49 @@ export default function DebtNotes() {
       }
     } catch (error) {
       console.error('Error deleting debt:', error);
+      alert('Terjadi kesalahan');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePartialPayment = async (debtId: string, currentAmount: number) => {
+    const payment = parseFloat(paymentAmount.replace(/\D/g, '') || '0');
+    
+    if (payment <= 0) {
+      alert('Jumlah pembayaran harus lebih dari 0!');
+      return;
+    }
+    
+    if (payment > currentAmount) {
+      alert('Jumlah pembayaran tidak boleh lebih dari sisa hutang!');
+      return;
+    }
+
+    const newAmount = currentAmount - payment;
+    const newStatus = newAmount === 0 ? 'paid' : 'partial';
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/debts/${debtId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: newAmount,
+          status: newStatus,
+        }),
+      });
+
+      if (response.ok) {
+        await fetchDebts();
+        setPayingDebtId(null);
+        setPaymentAmount('');
+        alert(`✓ Berhasil bayar ${formatCurrency(payment)}!\nSisa hutang: ${formatCurrency(newAmount)}`);
+      } else {
+        alert('Gagal memproses pembayaran');
+      }
+    } catch (error) {
+      console.error('Error processing payment:', error);
       alert('Terjadi kesalahan');
     } finally {
       setIsLoading(false);
@@ -346,15 +391,15 @@ export default function DebtNotes() {
             {debts.map((debt) => (
               <div
                 key={debt._id}
-                className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                className="border border-gray-200 dark:border-slate-600 rounded-lg p-4 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-750 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-semibold text-gray-900">{debt.creditor}</h4>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <h4 className="font-semibold text-gray-900 dark:text-white">{debt.creditor}</h4>
                       {getStatusBadge(debt.status)}
                     </div>
-                    <div className="space-y-1 text-sm text-gray-600">
+                    <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                       <p className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         Jatuh tempo: {formatDateShort(new Date(debt.dueDate))}
@@ -362,7 +407,7 @@ export default function DebtNotes() {
                       {debt.description && (
                         <p className="flex items-center gap-2">
                           <FileText className="w-4 h-4" />
-                          {debt.description}
+                          <span className="truncate">{debt.description}</span>
                         </p>
                       )}
                     </div>
@@ -370,26 +415,74 @@ export default function DebtNotes() {
 
                   <div className="flex items-center gap-3 ml-4">
                     <div className="text-right">
-                      <p className="text-lg font-bold text-red-600">
+                      <p className="text-lg font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
                         {formatCurrency(debt.amount)}
                       </p>
                     </div>
                     <div className="flex gap-1">
                       <button
                         onClick={() => handleEdit(debt)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                        title="Edit"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(debt._id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                        title="Hapus"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
                 </div>
+
+                {/* Payment Section */}
+                {debt.status !== 'paid' && (
+                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-600">
+                    {payingDebtId === debt._id ? (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                        <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                          💰 Jumlah Bayar
+                        </label>
+                        <NumberInput
+                          value={paymentAmount}
+                          onChange={setPaymentAmount}
+                          placeholder={`Maks: ${formatCurrency(debt.amount)}`}
+                          className="w-full mb-3"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handlePartialPayment(debt._id, debt.amount)}
+                            disabled={isLoading}
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                          >
+                            <Save className="w-4 h-4" />
+                            {isLoading ? 'Proses...' : 'Bayar'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setPayingDebtId(null);
+                              setPaymentAmount('');
+                            }}
+                            className="flex-1 bg-gray-300 dark:bg-slate-600 hover:bg-gray-400 dark:hover:bg-slate-500 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg text-sm font-medium"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setPayingDebtId(debt._id)}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        <DollarSign className="w-4 h-4" />
+                        Input Pembayaran
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>

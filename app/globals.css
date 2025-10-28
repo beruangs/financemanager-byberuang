@@ -3,12 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --text-primary: #171717;
-  --text-secondary: #404040;
-  --text-muted: #525252;
-  --card-bg: #f8f8f8;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #e2e8f0;
+  --input-text: #0f172a;
 }
 
 html.dark {
@@ -18,16 +21,9 @@ html.dark {
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
   --card-bg: #1e293b;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --text-primary: #ededed;
-    --text-secondary: #d4d4d4;
-    --text-muted: #a3a3a3;
-  }
+  --input-bg: #1e293b;
+  --input-border: #334155;
+  --input-text: #f1f5f9;
 }
 
 body {
@@ -44,10 +40,6 @@ html {
 /* Dark mode base colors */
 html.dark {
   color-scheme: dark;
-}
-
-html.dark body {
-  background-color: #0f172a;
 }
 
 @layer utilities {
@@ -72,29 +64,42 @@ html.dark body {
   }
 }
 
-/* Darker placeholder and label colors for better readability */
+/* Input styling - darker for better visibility */
+input,
+textarea,
+select {
+  color: var(--input-text) !important;
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+}
+
 input::placeholder,
 textarea::placeholder,
 select::placeholder {
-  color: #6b7280 !important;
-  opacity: 1;
+  color: #94a3b8 !important;
+  opacity: 0.7 !important;
 }
 
 html.dark input::placeholder,
 html.dark textarea::placeholder,
 html.dark select::placeholder {
   color: #64748b !important;
-  opacity: 1;
+  opacity: 0.7 !important;
 }
 
+/* Label styling */
 label {
-  color: #374151;
+  color: var(--text-primary) !important;
   font-weight: 500;
 }
 
-html.dark label {
-  color: #cbd5e1;
-  font-weight: 500;
+/* Better input focus states */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 /* Custom scrollbar */

@@ -14,6 +14,7 @@ import AISavingsCalculator from './AISavingsCalculator';
 import SkeletonLoader from './SkeletonLoader';
 import DebtNotes from './DebtNotes';
 import SuperAdmin from './SuperAdmin';
+import SimpleChart from './SimpleChart';
 import { formatCurrency } from '@/lib/utils';
 import { generateCSVContent, downloadCSV } from '@/lib/csvExport';
 import { 
@@ -185,18 +186,18 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <header className="bg-white shadow-sm sticky top-0 z-40 backdrop-blur-lg bg-opacity-90">
+        <header className="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-40 backdrop-blur-lg bg-opacity-95 dark:bg-opacity-95 border-b border-gray-200 dark:border-slate-700 transition-colors">
           <div className="px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl p-2">
                 <WalletIcon className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Finance Manager</h1>
-                <p className="text-xs text-gray-600">Kelola keuangan dengan mudah</p>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Finance Manager</h1>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Kelola keuangan dengan mudah</p>
               </div>
             </div>
             
@@ -428,6 +429,43 @@ export default function Dashboard() {
                       <p className="text-sm font-medium text-gray-800">Atur Budget</p>
                     </button>
                   </div>
+                </div>
+
+                {/* Charts - Visible on Mobile */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Expense Categories Chart */}
+                  <SimpleChart
+                    title="Pengeluaran per Kategori"
+                    type="bar"
+                    data={(() => {
+                      const categories: { [key: string]: number } = {};
+                      monthlyTransactions
+                        .filter(t => t.type === 'expense')
+                        .forEach(t => {
+                          categories[t.category] = (categories[t.category] || 0) + t.amount;
+                        });
+                      
+                      const colors = ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16'];
+                      return Object.entries(categories)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5)
+                        .map(([label, value], index) => ({
+                          label,
+                          value,
+                          color: colors[index % colors.length]
+                        }));
+                    })()}
+                  />
+
+                  {/* Income vs Expense */}
+                  <SimpleChart
+                    title="Pemasukan vs Pengeluaran"
+                    type="pie"
+                    data={[
+                      { label: 'Pemasukan', value: monthlyIncome, color: '#10b981' },
+                      { label: 'Pengeluaran', value: monthlyExpense, color: '#ef4444' }
+                    ]}
+                  />
                 </div>
 
                 {/* Recent Transactions */}

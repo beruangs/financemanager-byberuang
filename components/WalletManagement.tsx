@@ -19,6 +19,7 @@ export default function WalletManagement({ onWalletChange }: WalletManagementPro
   const [newBalance, setNewBalance] = useState('');
   const [formData, setFormData] = useState({
     name: '',
+    customName: '', // For custom naming like "GoPay (Jeje)"
     type: 'cash' as 'cash' | 'e-wallet' | 'bank',
     balance: '0',
     icon: 'wallet',
@@ -50,11 +51,16 @@ export default function WalletManagement({ onWalletChange }: WalletManagementPro
 
     setIsLoading(true);
     try {
+      // Create final wallet name with custom name if provided
+      const finalName = formData.customName 
+        ? `${formData.name} (${formData.customName})`
+        : formData.name;
+
       const response = await fetch('/api/wallets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: formData.name,
+          name: finalName,
           type: formData.type,
           balance: 0, // Always start with 0, balance will come from transaction
           icon: formData.icon,
@@ -75,7 +81,7 @@ export default function WalletManagement({ onWalletChange }: WalletManagementPro
               type: 'income',
               category: 'Saldo Awal',
               amount: parseInt(formData.balance),
-              description: `Saldo awal dompet ${formData.name}`,
+              description: `Saldo awal dompet ${finalName}`,
               date: new Date().toISOString(),
             }),
           });
@@ -84,7 +90,7 @@ export default function WalletManagement({ onWalletChange }: WalletManagementPro
         await fetchWallets();
         if (onWalletChange) onWalletChange();
         
-        setFormData({ name: '', type: 'cash', balance: '0', icon: 'wallet', color: '#3b82f6' });
+        setFormData({ name: '', customName: '', type: 'cash', balance: '0', icon: 'wallet', color: '#3b82f6' });
         setIsAdding(false);
       }
     } catch (error) {
@@ -255,7 +261,7 @@ export default function WalletManagement({ onWalletChange }: WalletManagementPro
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {formData.type === 'cash' ? 'Nama Dompet' : 'Pilih ' + (formData.type === 'e-wallet' ? 'E-Wallet' : 'Bank')}
                 </label>
                 {formData.type === 'cash' ? (
@@ -263,14 +269,14 @@ export default function WalletManagement({ onWalletChange }: WalletManagementPro
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500"
                     placeholder="Misal: Dompet Utama"
                   />
                 ) : formData.type === 'e-wallet' ? (
                   <select
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500"
                   >
                     <option value="">Pilih E-Wallet</option>
                     {EWALLET_OPTIONS.map(ew => (
@@ -281,7 +287,7 @@ export default function WalletManagement({ onWalletChange }: WalletManagementPro
                   <select
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500"
                   >
                     <option value="">Pilih Bank</option>
                     {BANK_OPTIONS.map(bank => (
@@ -290,6 +296,25 @@ export default function WalletManagement({ onWalletChange }: WalletManagementPro
                   </select>
                 )}
               </div>
+
+              {/* Custom Name for E-Wallet and Bank */}
+              {(formData.type === 'e-wallet' || formData.type === 'bank') && formData.name && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Nama Tambahan (Opsional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.customName}
+                    onChange={(e) => setFormData({ ...formData, customName: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500"
+                    placeholder={`Misal: ${formData.name} (Jeje)`}
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Untuk membedakan akun, misal: {formData.name} (Pribadi)
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-800 mb-2">

@@ -302,8 +302,8 @@ export default function BudgetAllocation({ onBudgetChange }: BudgetAllocationPro
         {/* Budget Allocations List */}
         {allocationsWithSpent.length === 0 ? (
           <div className="text-center py-12">
-            <TrendingUp className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-800 font-medium">Belum ada alokasi budget. Mulai atur budget Anda!</p>
+            <TrendingUp className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-900 dark:text-gray-100 font-medium">Belum ada alokasi budget. Mulai atur budget Anda!</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -314,28 +314,28 @@ export default function BudgetAllocation({ onBudgetChange }: BudgetAllocationPro
               return (
                 <div
                   key={allocation.category}
-                  className="p-4 bg-gray-50 rounded-xl hover:shadow-md transition-all"
+                  className="p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl hover:shadow-md dark:hover:bg-slate-700 transition-all border border-gray-200 dark:border-slate-600"
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1 min-w-0 pr-3">
-                      <h3 className="font-semibold text-gray-900 truncate">{allocation.category}</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white truncate">{allocation.category}</h3>
                       {allocation.description && (
-                        <p className="text-xs text-gray-600 mb-1 truncate">{allocation.description}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 truncate">{allocation.description}</p>
                       )}
-                      <p className="text-sm text-gray-800 truncate">
+                      <p className="text-sm text-gray-800 dark:text-gray-300 truncate">
                         {formatCurrency(allocation.spent)} / {formatCurrency(allocation.amount)}
                       </p>
                     </div>
                     <div className="flex items-center space-x-3">
                       {isOverBudget && (
                         <div title="Melebihi budget!">
-                          <AlertCircle className="w-5 h-5 text-red-600" />
+                          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                         </div>
                       )}
                       <button
                         onClick={() => handleDeleteAllocation(allocation.category)}
                         disabled={isLoading}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors disabled:opacity-50"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -343,25 +343,25 @@ export default function BudgetAllocation({ onBudgetChange }: BudgetAllocationPro
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="relative w-full h-3 bg-gray-200 dark:bg-slate-600 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-500 ${
                         isOverBudget
-                          ? 'bg-red-500'
+                          ? 'bg-red-500 dark:bg-red-600'
                           : percentage > 80
-                          ? 'bg-yellow-500'
-                          : 'bg-green-500'
+                          ? 'bg-yellow-500 dark:bg-yellow-600'
+                          : 'bg-green-500 dark:bg-green-600'
                       }`}
                       style={{ width: `${Math.min(percentage, 100)}%` }}
                     />
                   </div>
 
                   <div className="mt-2 flex justify-between text-xs">
-                    <span className={`font-semibold ${isOverBudget ? 'text-red-600' : 'text-gray-800'}`}>
+                    <span className={`font-semibold ${isOverBudget ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-300'}`}>
                       {percentage.toFixed(1)}%
                     </span>
                     <span className={`font-semibold ${
-                      isOverBudget ? 'text-red-600' : 'text-green-600'
+                      isOverBudget ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
                     }`}>
                       Sisa: {formatCurrency(allocation.amount - allocation.spent)}
                     </span>

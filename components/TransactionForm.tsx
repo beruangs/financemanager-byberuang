@@ -15,6 +15,7 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
   const [transactionType, setTransactionType] = useState<'expense' | 'income' | 'bill'>('expense');
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().slice(0,5), // HH:MM format
     amount: '',
     walletId: '',
     category: '',
@@ -108,13 +109,13 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Catat Transaksi</h2>
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-slate-700 transition-colors">
+      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Catat Transaksi</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Transaction Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
             Tipe Transaksi
           </label>
           <div className="grid grid-cols-3 gap-3">
@@ -126,8 +127,8 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
               }}
               className={`p-4 rounded-xl border-2 transition-all ${
                 transactionType === 'expense'
-                  ? 'border-red-500 bg-red-50 text-red-700'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-red-500 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                  : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 text-gray-700 dark:text-gray-300'
               }`}
             >
               <ArrowDownCircle className="w-8 h-8 mx-auto mb-2" />
@@ -141,8 +142,8 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
               }}
               className={`p-4 rounded-xl border-2 transition-all ${
                 transactionType === 'income'
-                  ? 'border-green-500 bg-green-50 text-green-700'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                  : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 text-gray-700 dark:text-gray-300'
               }`}
             >
               <ArrowUpCircle className="w-8 h-8 mx-auto mb-2" />
@@ -156,8 +157,8 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
               }}
               className={`p-4 rounded-xl border-2 transition-all ${
                 transactionType === 'bill'
-                  ? 'border-orange-500 bg-orange-50 text-orange-700'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
+                  : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 text-gray-700 dark:text-gray-300'
               }`}
             >
               <FileText className="w-8 h-8 mx-auto mb-2" />
@@ -169,7 +170,7 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               <Calendar className="w-4 h-4 inline mr-1" />
               Tanggal
             </label>
@@ -178,34 +179,48 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
               required
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+            />
+          </div>
+
+          {/* Time */}
+          <div>
+            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+              Jam
+            </label>
+            <input
+              type="time"
+              required
+              value={formData.time}
+              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+              className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
             />
           </div>
 
           {/* Amount */}
           <div>
-            <label className="block text-sm font-medium text-gray-800 mb-2">
+            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               Jumlah (Rp) *
             </label>
             <NumberInput
               required
               value={formData.amount}
               onChange={(value) => setFormData({ ...formData, amount: value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
               placeholder="50.000"
             />
           </div>
 
           {/* Wallet */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               Saldo/Dompet *
             </label>
             <select
               required
               value={formData.walletId}
               onChange={(e) => setFormData({ ...formData, walletId: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
             >
               <option value="">Pilih Dompet</option>
               {wallets.map((wallet) => (
@@ -218,14 +233,14 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               Kategori {getTypeLabel()} *
             </label>
             <select
               required
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
             >
               <option value="">Pilih Kategori</option>
               {categories.map((cat) => (
@@ -239,13 +254,13 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
             Catatan (Opsional)
           </label>
           <textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
             rows={3}
             placeholder={
               transactionType === 'expense'
@@ -268,20 +283,20 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
                 onChange={(e) => setFormData({ ...formData, isRecurring: e.target.checked })}
                 className="mr-2 w-4 h-4 text-indigo-600 rounded"
               />
-              <label htmlFor="isRecurring" className="text-sm font-medium text-gray-700">
+              <label htmlFor="isRecurring" className="text-sm font-medium text-gray-900 dark:text-gray-100">
                 Tagihan Berulang
               </label>
             </div>
 
             {formData.isRecurring && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                   Pola Berulang
                 </label>
                 <select
                   value={formData.recurringPattern}
                   onChange={(e) => setFormData({ ...formData, recurringPattern: e.target.value as any })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                 >
                   <option value="daily">Harian</option>
                   <option value="weekly">Mingguan</option>

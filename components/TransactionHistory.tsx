@@ -311,7 +311,7 @@ export default function TransactionHistory({ onTransactionChange }: TransactionH
               return (
                 <div
                   key={String(transaction._id)}
-                  className="border border-gray-200 dark:border-slate-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                  className="border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors overflow-hidden"
                 >
                   {isEditing ? (
                     /* Edit Mode */
@@ -410,52 +410,52 @@ export default function TransactionHistory({ onTransactionChange }: TransactionH
                     </div>
                   ) : (
                     /* View Mode */
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-4 flex-1">
-                        <div className="mt-1">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className="mt-1 flex-shrink-0">
                           {getTypeIcon(transaction.type)}
                         </div>
                         
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-gray-900 dark:text-white">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="font-semibold text-gray-900 dark:text-white truncate">
                               {transaction.category}
                             </span>
-                            <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 rounded">
+                            <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 rounded whitespace-nowrap">
                               {getTypeLabel(transaction.type)}
                             </span>
                           </div>
                           
-                          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-                            <span>{getWalletName(transaction.walletId)}</span>
-                            <span>•</span>
-                            <span>{formatDateShort(new Date(transaction.date))}</span>
+                          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <span className="truncate max-w-[150px]">{getWalletName(transaction.walletId)}</span>
+                            <span className="text-gray-400 dark:text-gray-600">•</span>
+                            <span className="whitespace-nowrap">{formatDateShort(new Date(transaction.date))}</span>
                             {transaction.description && (
                               <>
-                                <span>•</span>
-                                <span className="truncate">{transaction.description}</span>
+                                <span className="text-gray-400 dark:text-gray-600">•</span>
+                                <span className="truncate max-w-[200px]">{transaction.description}</span>
                               </>
                             )}
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <span className={`font-bold text-lg ${getTypeColor(transaction.type)}`}>
+                      <div className="flex items-center justify-between sm:justify-end gap-3 sm:ml-4">
+                        <span className={`font-bold text-lg whitespace-nowrap ${getTypeColor(transaction.type)}`}>
                           {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount || 0)}
                         </span>
                         
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 flex-shrink-0">
                           <button
                             onClick={() => handleEdit(transaction)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                             title="Edit"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(String(transaction._id))}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                             title="Hapus"
                           >
                             <Trash2 className="w-4 h-4" />

@@ -72,8 +72,10 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
         if (onTransactionAdd) onTransactionAdd();
         
         // Reset form
+        const now = new Date();
         setFormData({
-          date: new Date().toISOString().split('T')[0],
+          date: now.toISOString().split('T')[0],
+          time: now.toTimeString().slice(0, 5),
           amount: '',
           walletId: '',
           category: '',

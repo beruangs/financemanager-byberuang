@@ -37,7 +37,7 @@ import {
   Shield
 } from 'lucide-react';
 
-type ActiveTab = 'dashboard' | 'wallets' | 'transaction' | 'history' | 'budget' | 'savings' | 'debt' | 'admin';
+type ActiveTab = 'dashboard' | 'wallets' | 'transaction' | 'history' | 'budget' | 'savings' | 'debt' | 'admin' | 'settings';
 
 interface Wallet {
   _id: string;
@@ -282,49 +282,34 @@ export default function Dashboard() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white shadow-lg p-4 absolute top-16 right-0 left-0 z-30">
-            <div className="flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="md:hidden bg-white dark:bg-slate-800 shadow-lg p-4 absolute top-16 right-0 left-0 z-30 border-b border-gray-200 dark:border-slate-700">
+            <div className="flex items-center gap-2 mb-4 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
               <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
                 {session.user?.name?.[0]?.toUpperCase() || 'U'}
               </div>
               <div>
-                <p className="font-medium text-gray-900">{session.user?.name}</p>
-                <p className="text-xs text-gray-600">{session.user?.email}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{session.user?.name}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">{session.user?.email}</p>
               </div>
             </div>
             <nav className="space-y-2">
-              {[
-                { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-                { id: 'wallets', label: 'Dompet', icon: WalletIcon },
-                { id: 'transaction', label: 'Tambah Transaksi', icon: Plus },
-                { id: 'history', label: 'Riwayat', icon: History },
-                { id: 'budget', label: 'Budget', icon: PieChart },
-                { id: 'savings', label: 'Tabungan', icon: Target },
-                { id: 'debt', label: 'Hutang', icon: DollarSign },
-                ...(userRole === 'superadmin' ? [{ id: 'admin', label: 'Admin', icon: Shield }] : [])
-              ].map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      setActiveTab(tab.id as ActiveTab);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                      activeTab === tab.id
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
-                        : 'hover:bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{tab.label}</span>
-                  </button>
-                );
-              })}
+              <button
+                onClick={() => {
+                  setActiveTab('settings');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  activeTab === 'settings'
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                    : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                <SettingsIcon className="w-5 h-5" />
+                <span className="font-medium">Pengaturan</span>
+              </button>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-50 text-red-600"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
               >
                 <LogOut className="w-5 h-5" />
                 <span className="font-medium">Keluar</span>
@@ -335,35 +320,20 @@ export default function Dashboard() {
 
         <div className="flex">
           {/* Sidebar - Desktop */}
-          <aside className="hidden md:block w-64 min-h-screen bg-white shadow-lg">
+          <aside className="hidden md:block w-64 min-h-screen bg-white dark:bg-slate-800 shadow-lg border-r border-gray-200 dark:border-slate-700">
             <div className="p-4">
               <nav className="space-y-2">
-                {[
-                  { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-                  { id: 'wallets', label: 'Dompet', icon: WalletIcon },
-                  { id: 'transaction', label: 'Tambah Transaksi', icon: Plus },
-                  { id: 'history', label: 'Riwayat', icon: History },
-                  { id: 'budget', label: 'Budget', icon: PieChart },
-                  { id: 'savings', label: 'Tabungan', icon: Target },
-                  { id: 'debt', label: 'Hutang', icon: DollarSign },
-                  ...(userRole === 'superadmin' ? [{ id: 'admin', label: 'Admin', icon: Shield }] : [])
-                ].map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id as ActiveTab)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                        activeTab === tab.id
-                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
-                          : 'hover:bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span className="font-medium">{tab.label}</span>
-                    </button>
-                  );
-                })}
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    activeTab === 'settings'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                      : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  <SettingsIcon className="w-5 h-5" />
+                  <span className="font-medium">Pengaturan</span>
+                </button>
               </nav>
             </div>
           </aside>
@@ -554,7 +524,7 @@ export default function Dashboard() {
               <DebtNotes />
             ) : activeTab === 'admin' ? (
               <SuperAdmin />
-            ) : (activeTab as string) === 'settings' ? (
+            ) : activeTab === 'settings' ? (
               <Settings onLogout={handleLogout} />
             ) : null}
           </main>

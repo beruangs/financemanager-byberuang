@@ -323,17 +323,33 @@ export default function Dashboard() {
           <aside className="hidden md:block w-64 min-h-screen bg-white dark:bg-slate-800 shadow-lg border-r border-gray-200 dark:border-slate-700">
             <div className="p-4">
               <nav className="space-y-2">
-                <button
-                  onClick={() => setActiveTab('settings')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                    activeTab === 'settings'
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
-                      : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  <SettingsIcon className="w-5 h-5" />
-                  <span className="font-medium">Pengaturan</span>
-                </button>
+                {[
+                  { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+                  { id: 'wallets', label: 'Dompet', icon: WalletIcon },
+                  { id: 'transaction', label: 'Tambah Transaksi', icon: Plus },
+                  { id: 'history', label: 'Riwayat', icon: History },
+                  { id: 'budget', label: 'Budget', icon: PieChart },
+                  { id: 'savings', label: 'Tabungan', icon: Target },
+                  { id: 'debt', label: 'Hutang', icon: DollarSign },
+                  { id: 'settings', label: 'Pengaturan', icon: SettingsIcon },
+                  ...(userRole === 'superadmin' ? [{ id: 'admin', label: 'Admin', icon: Shield }] : [])
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as ActiveTab)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                        activeTab === tab.id
+                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                          : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="font-medium">{tab.label}</span>
+                    </button>
+                  );
+                })}
               </nav>
             </div>
           </aside>

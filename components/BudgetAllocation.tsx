@@ -39,7 +39,12 @@ export default function BudgetAllocation({ onBudgetChange }: BudgetAllocationPro
 
       if (budgetRes.ok) {
         const budgetData = await budgetRes.json();
-        setBudget(budgetData.budget || budgetData);
+        const budgetObj = budgetData.budget || budgetData;
+        // Ensure allocations is always an array
+        if (budgetObj && !budgetObj.allocations) {
+          budgetObj.allocations = [];
+        }
+        setBudget(budgetObj);
       }
 
       if (transactionsRes.ok) {
@@ -100,9 +105,8 @@ export default function BudgetAllocation({ onBudgetChange }: BudgetAllocationPro
         description: formData.description,
       };
 
-      const allocations = budget 
-        ? [...budget.allocations, newAllocation]
-        : [newAllocation];
+      const currentAllocations = budget?.allocations || [];
+      const allocations = [...currentAllocations, newAllocation];
 
       const totalBudget = allocations.reduce((sum, a) => sum + a.amount, 0);
 

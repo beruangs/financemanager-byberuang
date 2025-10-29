@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
+import LoginHistory from '@/models/LoginHistory';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -44,20 +45,62 @@ export const authOptions: AuthOptions = {
   ],
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+      },
+    },
   },
   pages: {
     signIn: '/login',
   },
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'credentials' && user?.id) {
+        try {
+          await dbConnect();
+          
+          // Create login history record
+          await LoginHistory.create({
+            userId: user.id,
+            device: 'Web Browser',
+            browser: 'Unknown',
+            os: 'Unknown',
+            ip: '0.0.0.0',
+            loginTime: new Date(),
+            isActive: true,
+          });
+        } catch (error) {
+          console.error('Error saving login history:', error);
+          // Don't fail login if history save fails
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        // Fetch user role from database
+        await dbConnect();
+        const dbUser = await User.findById(user.id);
+        if (dbUser) {
+          token.role = dbUser.role || 'user';
+        }
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.role = token.role as string;
       }
       return session;
     },

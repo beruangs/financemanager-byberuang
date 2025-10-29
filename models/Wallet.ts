@@ -6,6 +6,7 @@ export interface IWallet {
   _id: string;
   userId: mongoose.Types.ObjectId;
   name: string;
+  customName?: string;
   type: WalletType;
   balance: number;
   icon?: string;
@@ -25,6 +26,10 @@ const WalletSchema = new Schema<IWallet>(
       type: String,
       required: [true, 'Please provide a wallet name'],
       maxlength: [60, 'Name cannot be more than 60 characters'],
+    },
+    customName: {
+      type: String,
+      maxlength: [100, 'Custom name cannot be more than 100 characters'],
     },
     type: {
       type: String,

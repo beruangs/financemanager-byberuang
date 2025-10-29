@@ -105,6 +105,7 @@ export default function WalletManagement({ onWalletChange }: WalletManagementPro
     setEditingId(wallet._id);
     setFormData({
       name: wallet.name,
+      customName: wallet.customName || '',
       type: wallet.type,
       balance: wallet.balance.toString(),
       icon: wallet.icon || 'wallet',
@@ -134,7 +135,7 @@ export default function WalletManagement({ onWalletChange }: WalletManagementPro
         if (onWalletChange) onWalletChange();
         
         setEditingId(null);
-        setFormData({ name: '', type: 'cash', balance: '0', icon: 'wallet', color: '#3b82f6' });
+        setFormData({ name: '', customName: '', type: 'cash', balance: '0', icon: 'wallet', color: '#3b82f6' });
       }
     } catch (error) {
       console.error('Error updating wallet:', error);
@@ -375,7 +376,7 @@ export default function WalletManagement({ onWalletChange }: WalletManagementPro
                       <button
                         onClick={() => {
                           setEditingId(null);
-                          setFormData({ name: '', type: 'cash', balance: '0', icon: 'wallet', color: '#3b82f6' });
+                          setFormData({ name: '', customName: '', type: 'cash', balance: '0', icon: 'wallet', color: '#3b82f6' });
                         }}
                         className="flex-1 bg-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm hover:bg-gray-400"
                       >

@@ -27,6 +27,10 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
     recurringPattern: 'monthly' as 'daily' | 'weekly' | 'monthly' | 'yearly',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [newWalletName, setNewWalletName] = useState('');
+  const [isAddingNewWallet, setIsAddingNewWallet] = useState(false);
+  const [newToWalletName, setNewToWalletName] = useState('');
+  const [isAddingNewToWallet, setIsAddingNewToWallet] = useState(false);
 
   useEffect(() => {
     fetchWallets();
@@ -41,6 +45,47 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
       }
     } catch (error) {
       console.error('Error fetching wallets:', error);
+    }
+  };
+
+  const handleCreateNewWallet = async (walletName: string, isToWallet: boolean = false) => {
+    if (!walletName.trim()) {
+      alert('Nama dompet tidak boleh kosong!');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/wallets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: walletName.trim(),
+          balance: 0,
+          customName: walletName.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        const newWallet = await response.json();
+        await fetchWallets(); // Refresh wallet list
+        
+        // Set the newly created wallet as selected
+        if (isToWallet) {
+          setFormData({ ...formData, toWalletId: newWallet._id });
+          setNewToWalletName('');
+          setIsAddingNewToWallet(false);
+        } else {
+          setFormData({ ...formData, walletId: newWallet._id });
+          setNewWalletName('');
+          setIsAddingNewWallet(false);
+        }
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Gagal membuat dompet baru');
+      }
+    } catch (error) {
+      console.error('Error creating wallet:', error);
+      alert('Terjadi kesalahan saat membuat dompet baru');
     }
   };
 
@@ -313,19 +358,70 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
             <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               {transactionType === 'transfer' ? 'Dari Dompet *' : 'Saldo/Dompet *'}
             </label>
-            <select
-              required
-              value={formData.walletId}
-              onChange={(e) => setFormData({ ...formData, walletId: e.target.value })}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-            >
-              <option value="">Pilih Dompet</option>
-              {wallets.map((wallet) => (
-                <option key={wallet._id} value={wallet._id}>
-                  {wallet.customName || wallet.name} (Saldo: Rp {wallet.balance.toLocaleString('id-ID')})
-                </option>
-              ))}
-            </select>
+            {isAddingNewWallet ? (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newWalletName}
+                  onChange={(e) => setNewWalletName(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCreateNewWallet(newWalletName, false);
+                    }
+                  }}
+                  className="flex-1 px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                  placeholder="Ketik nama dompet baru..."
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => handleCreateNewWallet(newWalletName, false)}
+                  className="px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
+                >
+                  ✓
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddingNewWallet(false);
+                    setNewWalletName('');
+                  }}
+                  className="px-4 py-3 bg-gray-400 text-white rounded-xl hover:bg-gray-500 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <select
+                  required
+                  value={formData.walletId}
+                  onChange={(e) => {
+                    if (e.target.value === '__new__') {
+                      setIsAddingNewWallet(true);
+                      setFormData({ ...formData, walletId: '' });
+                    } else {
+                      setFormData({ ...formData, walletId: e.target.value });
+                    }
+                  }}
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                >
+                  <option value="">-- Pilih atau buat dompet baru --</option>
+                  {wallets.map((wallet) => (
+                    <option key={wallet._id} value={wallet._id}>
+                      {wallet.customName || wallet.name} (Saldo: Rp {wallet.balance.toLocaleString('id-ID')})
+                    </option>
+                  ))}
+                  <option value="__new__" className="font-semibold text-indigo-600">
+                    ➕ Tambah Dompet Baru
+                  </option>
+                </select>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  💡 Pilih dari daftar atau klik "Tambah Dompet Baru" untuk membuat yang baru
+                </p>
+              </div>
+            )}
           </div>
 
           {/* To Wallet - Only for Transfer */}
@@ -334,21 +430,72 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                 Ke Dompet *
               </label>
-              <select
-                required
-                value={formData.toWalletId}
-                onChange={(e) => setFormData({ ...formData, toWalletId: e.target.value })}
-                className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-              >
-                <option value="">Pilih Dompet Tujuan</option>
-                {wallets
-                  .filter(wallet => wallet._id !== formData.walletId)
-                  .map((wallet) => (
-                    <option key={wallet._id} value={wallet._id}>
-                      {wallet.customName || wallet.name} (Saldo: Rp {wallet.balance.toLocaleString('id-ID')})
+              {isAddingNewToWallet ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newToWalletName}
+                    onChange={(e) => setNewToWalletName(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleCreateNewWallet(newToWalletName, true);
+                      }
+                    }}
+                    className="flex-1 px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                    placeholder="Ketik nama dompet tujuan..."
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleCreateNewWallet(newToWalletName, true)}
+                    className="px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
+                  >
+                    ✓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingNewToWallet(false);
+                      setNewToWalletName('');
+                    }}
+                    className="px-4 py-3 bg-gray-400 text-white rounded-xl hover:bg-gray-500 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <select
+                    required
+                    value={formData.toWalletId}
+                    onChange={(e) => {
+                      if (e.target.value === '__new__') {
+                        setIsAddingNewToWallet(true);
+                        setFormData({ ...formData, toWalletId: '' });
+                      } else {
+                        setFormData({ ...formData, toWalletId: e.target.value });
+                      }
+                    }}
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                  >
+                    <option value="">-- Pilih dompet tujuan --</option>
+                    {wallets
+                      .filter(wallet => wallet._id !== formData.walletId)
+                      .map((wallet) => (
+                        <option key={wallet._id} value={wallet._id}>
+                          {wallet.customName || wallet.name} (Saldo: Rp {wallet.balance.toLocaleString('id-ID')})
+                        </option>
+                      ))}
+                    <option value="__new__" className="font-semibold text-indigo-600">
+                      ➕ Tambah Dompet Baru
                     </option>
-                  ))}
-              </select>
+                  </select>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    💡 Pilih dari daftar atau klik "Tambah Dompet Baru" untuk membuat yang baru
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

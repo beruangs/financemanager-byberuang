@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { clearPersistedSession } from '@/lib/session-persistence';
 import WalletManagement from './WalletManagement';
 import TransactionForm from './TransactionForm';
 import TransactionHistory from './TransactionHistory';
@@ -149,6 +150,8 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
+    // Clear persisted session for PWA
+    clearPersistedSession();
     await signOut({ redirect: true, callbackUrl: '/' });
   };
 

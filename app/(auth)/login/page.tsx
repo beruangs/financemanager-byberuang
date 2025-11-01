@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { persistSession, isPWA } from '@/lib/session-persistence';
 
 export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    rememberMe: true, // Default to true for PWA
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,6 +31,12 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error);
       } else {
+        // Persist session for PWA (especially iOS)
+        if (formData.rememberMe) {
+          persistSession(formData.email);
+          console.log('Session persisted for PWA (iOS compatible)');
+        }
+        
         router.push('/dashboard');
         router.refresh();
       }
@@ -85,6 +93,21 @@ export default function LoginPage() {
             />
           </div>
 
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              checked={formData.rememberMe}
+              onChange={(e) =>
+                setFormData({ ...formData, rememberMe: e.target.checked })
+              }
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700">
+              Tetap login {isPWA() && '(Direkomendasikan untuk PWA)'}
+            </label>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -93,6 +116,14 @@ export default function LoginPage() {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+
+        {isPWA() && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs text-blue-700">
+              💡 Anda menggunakan PWA! Centang "Tetap login" agar tidak perlu login berulang kali.
+            </p>
+          </div>
+        )}
 
         <p className="text-center mt-6 text-gray-600">
           Don't have an account?{' '}

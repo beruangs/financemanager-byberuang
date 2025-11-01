@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowDownCircle, ArrowUpCircle, FileText, Calendar, ArrowLeftRight } from 'lucide-react';
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, BILL_CATEGORIES } from '@/lib/constants';
+import { ArrowDownCircle, ArrowUpCircle, FileText, Calendar, ArrowLeftRight, Plus, X } from 'lucide-react';
 import { IWallet } from '@/models/Wallet';
 import NumberInput from './NumberInput';
+import { useCategories } from '@/lib/useCategories';
 
 interface TransactionFormProps {
   onTransactionAdd?: () => void;
@@ -31,6 +31,18 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
   const [isAddingNewWallet, setIsAddingNewWallet] = useState(false);
   const [newToWalletName, setNewToWalletName] = useState('');
   const [isAddingNewToWallet, setIsAddingNewToWallet] = useState(false);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  // Use categories hook based on transaction type
+  const categoryType = transactionType === 'transfer' ? 'expense' : transactionType;
+  const {
+    allCategories,
+    customCategories,
+    addCustomCategory,
+    deleteCustomCategory,
+    isLoading: isCategoryLoading,
+  } = useCategories(categoryType as 'expense' | 'income' | 'bill');
 
   useEffect(() => {
     fetchWallets();
@@ -220,13 +232,18 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
     }
   };
 
-  const categories = transactionType === 'expense' 
-    ? EXPENSE_CATEGORIES 
-    : transactionType === 'income' 
-    ? INCOME_CATEGORIES 
-    : transactionType === 'bill'
-    ? BILL_CATEGORIES
-    : [];
+  const handleAddCustomCategory = async () => {
+    if (!newCategoryName.trim()) return;
+
+    const result = await addCustomCategory(newCategoryName.trim());
+    if (result.success) {
+      setFormData({ ...formData, category: newCategoryName.trim() });
+      setNewCategoryName('');
+      setShowAddCategory(false);
+    } else {
+      alert(result.error || 'Gagal menambah kategori');
+    }
+  };
 
   const getTypeLabel = () => {
     if (transactionType === 'expense') return 'Pengeluaran';
@@ -505,19 +522,73 @@ export default function TransactionForm({ onTransactionAdd }: TransactionFormPro
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                 Kategori {getTypeLabel()} *
               </label>
-              <select
-                required
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-              >
-                <option value="">Pilih Kategori</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              
+              {showAddCategory ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCustomCategory();
+                      }
+                    }}
+                    className="flex-1 px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                    placeholder="Nama kategori baru..."
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomCategory}
+                    disabled={isCategoryLoading}
+                    className="px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50"
+                  >
+                    ✓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddCategory(false);
+                      setNewCategoryName('');
+                    }}
+                    className="px-4 py-3 bg-gray-400 text-white rounded-xl hover:bg-gray-500 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <select
+                    required
+                    value={formData.category}
+                    onChange={(e) => {
+                      if (e.target.value === '__custom__') {
+                        setShowAddCategory(true);
+                        setFormData({ ...formData, category: '' });
+                      } else {
+                        setFormData({ ...formData, category: e.target.value });
+                      }
+                    }}
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                  >
+                    <option value="">-- Pilih Kategori --</option>
+                    {allCategories.map((cat: string) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                        {customCategories.some(c => c.name === cat) && ' (Custom)'}
+                      </option>
+                    ))}
+                    <option value="__custom__" className="font-semibold text-indigo-600">
+                      ➕ Tambah Kategori Custom
+                    </option>
+                  </select>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    💡 Pilih dari daftar atau buat kategori custom
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

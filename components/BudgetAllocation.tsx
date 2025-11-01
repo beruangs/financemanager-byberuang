@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, TrendingUp, AlertCircle, Edit2, Save, X, HelpCircle, BookmarkPlus, BookmarkCheck, Copy } from 'lucide-react';
 import { formatCurrency, getCurrentMonth } from '@/lib/utils';
-import { EXPENSE_CATEGORIES } from '@/lib/constants';
 import { IBudget } from '@/models/Budget';
 import { ITransaction } from '@/models/Transaction';
 import NumberInput from './NumberInput';
 import { useAlert } from '@/context/AlertContext';
+import { useCategories } from '@/lib/useCategories';
 
 interface BudgetAllocationProps {
   onBudgetChange?: () => void;
@@ -15,6 +15,7 @@ interface BudgetAllocationProps {
 
 export default function BudgetAllocation({ onBudgetChange }: BudgetAllocationProps) {
   const { showAlert, showConfirm } = useAlert();
+  const { allCategories, customCategories } = useCategories('expense');
   const [budget, setBudget] = useState<IBudget | null>(null);
   const [transactions, setTransactions] = useState<ITransaction[]>([]);
   const [monthlyIncome, setMonthlyIncome] = useState(0);
@@ -725,8 +726,11 @@ export default function BudgetAllocation({ onBudgetChange }: BudgetAllocationPro
                 className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">Pilih Kategori</option>
-                {EXPENSE_CATEGORIES.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                {allCategories.map((cat: string) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                    {customCategories.some(c => c.name === cat) && ' (Custom)'}
+                  </option>
                 ))}
               </select>
             </div>
@@ -823,8 +827,11 @@ export default function BudgetAllocation({ onBudgetChange }: BudgetAllocationPro
                             onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
                             className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500"
                           >
-                            {EXPENSE_CATEGORIES.map(cat => (
-                              <option key={cat} value={cat}>{cat}</option>
+                            {allCategories.map((cat: string) => (
+                              <option key={cat} value={cat}>
+                                {cat}
+                                {customCategories.some(c => c.name === cat) && ' (Custom)'}
+                              </option>
                             ))}
                           </select>
                         </div>

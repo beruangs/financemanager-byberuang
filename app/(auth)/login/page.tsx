@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -15,6 +15,16 @@ export default function LoginPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPWANotice, setShowPWANotice] = useState(false);
+
+  useEffect(() => {
+    // Check PWA status on client side only
+    try {
+      setShowPWANotice(isPWA());
+    } catch (err) {
+      console.error('PWA detection error:', err);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,14 +43,20 @@ export default function LoginPage() {
       } else {
         // Persist session for PWA (especially iOS)
         if (formData.rememberMe) {
-          persistSession(formData.email);
-          console.log('Session persisted for PWA (iOS compatible)');
+          try {
+            persistSession(formData.email);
+            console.log('Session persisted for PWA (iOS compatible)');
+          } catch (err) {
+            console.error('Failed to persist session:', err);
+            // Don't fail login if persistence fails
+          }
         }
         
         router.push('/dashboard');
         router.refresh();
       }
     } catch (error) {
+      console.error('Login error:', error);
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -104,7 +120,7 @@ export default function LoginPage() {
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
             <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700">
-              Tetap login {isPWA() && '(Direkomendasikan untuk PWA)'}
+              Tetap login {showPWANotice && '(Direkomendasikan untuk PWA)'}
             </label>
           </div>
 
@@ -117,7 +133,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {isPWA() && (
+        {showPWANotice && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-xs text-blue-700">
               💡 Anda menggunakan PWA! Centang "Tetap login" agar tidak perlu login berulang kali.
